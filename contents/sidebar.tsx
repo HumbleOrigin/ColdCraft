@@ -242,24 +242,28 @@ function Sidebar() {
       return
     }
 
-    const response = await sendToBackground<
-      { pageText: string },
-      { senderInfo?: Partial<SenderInfo>; error?: string }
-    >({ name: "extractSenderProfile", body: { pageText } })
+    try {
+      const response = await sendToBackground<
+        { pageText: string },
+        { senderInfo?: Partial<SenderInfo>; error?: string }
+      >({ name: "extractSenderProfile", body: { pageText } })
 
-    if (response.error === "NO_API_KEY") {
-      setImportError("Add your API key first.")
-    } else if (response.error) {
-      setImportError(`Extraction failed: ${response.error}`)
-    } else if (response.senderInfo) {
-      setSetupDraft((d) => ({
-        name: response.senderInfo!.name || d.name,
-        school: response.senderInfo!.school || d.school,
-        year: response.senderInfo!.year || d.year,
-        status: response.senderInfo!.status || d.status,
-        targetArea: d.targetArea
-      }))
-      setSenderLinkedinText(pageText)
+      if (response.error === "NO_API_KEY") {
+        setImportError("Add your API key first.")
+      } else if (response.error) {
+        setImportError(`Extraction failed: ${response.error}`)
+      } else if (response.senderInfo) {
+        setSetupDraft((d) => ({
+          name: response.senderInfo!.name || d.name,
+          school: response.senderInfo!.school || d.school,
+          year: response.senderInfo!.year || d.year,
+          status: response.senderInfo!.status || d.status,
+          targetArea: d.targetArea
+        }))
+        setSenderLinkedinText(pageText)
+      }
+    } catch {
+      setImportError("Failed to extract profile. Try reloading the page.")
     }
 
     setImportingProfile(false)
@@ -808,7 +812,7 @@ function Sidebar() {
                   Rate limited. Wait a moment and try again, or check your <a className="lcmg-api-link" href="https://console.anthropic.com/settings/limits" target="_blank" rel="noreferrer" style={{ color: "#A89EFF" }}>usage limits</a>.
                 </div>
               )}
-              {error.includes("insufficient") && (
+              {error.toLowerCase().includes("insufficient") && (
                 <div style={{ fontSize: 11, color: "rgba(255,128,128,0.7)", lineHeight: 1.5 }}>
                   Your API account needs credits. Add billing at <a className="lcmg-api-link" href="https://console.anthropic.com/settings/billing" target="_blank" rel="noreferrer" style={{ color: "#A89EFF" }}>console.anthropic.com/settings/billing</a>.
                 </div>
