@@ -435,6 +435,13 @@ function Sidebar() {
         .lcmg-btn-primary:hover:not(:disabled) { background: #3b7cf7; transform: translateY(-1px); }
         .lcmg-btn-primary:active:not(:disabled) { transform: translateY(0); }
         .lcmg-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .lcmg-btn-primary:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        .lcmg-btn-ghost:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        .lcmg-btn-sm:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        .lcmg-close-btn:focus-visible, .lcmg-gear-btn:focus-visible, .lcmg-settings-back:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        .lcmg-variant-btn:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        .lcmg-chip:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        .lcmg-you-pill:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
         .lcmg-btn-ghost { background: none; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-size: 12.5px; font-weight: 500; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
         .lcmg-btn-ghost:hover { border-color: rgba(255,255,255,0.3); color: #fff; background: rgba(255,255,255,0.04); }
         .lcmg-btn-sm { background: rgba(37,99,235,0.15); border: 1px solid rgba(37,99,235,0.3); color: #93c5fd; font-size: 11.5px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }

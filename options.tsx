@@ -61,6 +61,7 @@ function Options() {
         input::placeholder { color: rgba(255,255,255,0.25); }
         .btn-primary { background: #2563EB; border: none; color: #fff; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
         .btn-primary:hover { background: #3b7cf7; }
+        .btn-primary:focus-visible, .btn-ghost:focus-visible, .provider-btn:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
         .btn-ghost { background: none; border: 1px solid rgba(255,80,80,0.3); color: rgba(255,100,100,0.8); font-size: 12px; font-weight: 500; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
         .btn-ghost:hover { background: rgba(255,80,80,0.08); border-color: rgba(255,80,80,0.5); }
         .status { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; font-size: 12.5px; }

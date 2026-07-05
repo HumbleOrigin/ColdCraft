@@ -27,6 +27,7 @@ function Popup() {
         .divider { height: 1px; background: rgba(255,255,255,0.07); }
         .btn-primary { width: 100%; background: #2563EB; border: none; color: #fff; font-size: 13px; font-weight: 600; padding: 10px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
         .btn-primary:hover { background: #3b7cf7; }
+        .btn-primary:focus-visible, .btn:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
         .btn { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); font-size: 12px; padding: 8px; border-radius: 7px; cursor: pointer; transition: all 0.15s; text-align: center; }
         .btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .step { display: flex; align-items: flex-start; gap: 10px; }
