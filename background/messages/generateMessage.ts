@@ -1,5 +1,6 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 import { callAI, loadAIConfig } from "../aiClient"
+import { sanitizeProfileText } from "../sanitize"
 
 export type SenderInfo = {
   name: string
@@ -178,10 +179,10 @@ Target area: ${senderInfo.targetArea}`
 
   const senderContext = [
     senderInfo.linkedinText
-      ? `--- Sender's LinkedIn profile (use to find shared connections/interests with recipient) ---\n${senderInfo.linkedinText.slice(0, 4000)}`
+      ? `--- Sender's LinkedIn profile (use to find shared connections/interests with recipient) ---\n${sanitizeProfileText(senderInfo.linkedinText.slice(0, 4000))}`
       : "",
     senderInfo.resumeText
-      ? `--- Sender's resume (use to find shared connections/interests with recipient) ---\n${senderInfo.resumeText.slice(0, 3000)}`
+      ? `--- Sender's resume (use to find shared connections/interests with recipient) ---\n${sanitizeProfileText(senderInfo.resumeText.slice(0, 3000))}`
       : ""
   ]
     .filter(Boolean)
@@ -193,11 +194,12 @@ ${senderIntro}
 Use ONLY the sender's name, school, year, and status for the intro line. Do not pull anything from the recipient's profile to describe the sender.
 ${senderContext ? `\nThe following is additional background on the sender. Use it ONLY to find genuine shared connections, interests, or experiences with the recipient for the hook. Never mention these details in the intro line.\n\n${senderContext}` : ""}`
 
-  const recipientBlock = rawProfileText
+  const cleanedRecipientText = rawProfileText ? sanitizeProfileText(rawProfileText) : ""
+  const recipientBlock = cleanedRecipientText
     ? `=== WHO THE MESSAGE IS BEING SENT TO ===
 (Raw LinkedIn page text. Extract name, current title, firm, career history, and any hook-worthy details from this.)
 ---
-${rawProfileText}
+${cleanedRecipientText}
 ---`
     : `=== WHO THE MESSAGE IS BEING SENT TO ===
 Name: ${profile.name}

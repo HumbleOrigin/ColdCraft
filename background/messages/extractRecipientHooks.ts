@@ -1,5 +1,6 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 import { callAI, loadAIConfig } from "../aiClient"
+import { sanitizeProfileText } from "../sanitize"
 
 export type ExtractRecipientHooksRequest = {
   rawProfileText: string
@@ -15,6 +16,7 @@ const handler: PlasmoMessaging.MessageHandler<
   ExtractRecipientHooksResponse
 > = async (req, res) => {
   const { rawProfileText } = req.body
+  const cleanedText = sanitizeProfileText(rawProfileText.slice(0, 5000))
 
   const config = await loadAIConfig()
   if (!config) {
@@ -29,7 +31,7 @@ Good examples: "played lacrosse at Duke", "volunteer at Habitat for Humanity", "
 
 Profile text:
 ---
-${rawProfileText.slice(0, 5000)}
+${cleanedText}
 ---
 
 Return JSON like: ["detail 1", "detail 2", "detail 3"]`
@@ -48,7 +50,13 @@ Return JSON like: ["detail 1", "detail 2", "detail 3"]`
       return
     }
 
-    const parsed = JSON.parse(jsonMatch[0])
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(jsonMatch[0])
+    } catch {
+      res.send({ hookDetails: [] })
+      return
+    }
     if (Array.isArray(parsed)) {
       res.send({ hookDetails: parsed.slice(0, 5).filter((s: unknown) => typeof s === "string") })
     } else {

@@ -21,12 +21,19 @@ function Options() {
   }, [])
 
   const save = async () => {
-    await chrome.storage.sync.set({
+    const settings: Record<string, string> = {
       ai_provider: provider,
       ai_api_key: apiKey.trim(),
-      ai_model: model.trim() || undefined,
-      ai_base_url: baseUrl.trim() || undefined
-    })
+    }
+    if (model.trim()) settings.ai_model = model.trim()
+    if (baseUrl.trim()) settings.ai_base_url = baseUrl.trim()
+    await chrome.storage.sync.set(settings)
+
+    const keysToRemove: string[] = []
+    if (!model.trim()) keysToRemove.push("ai_model")
+    if (!baseUrl.trim()) keysToRemove.push("ai_base_url")
+    if (keysToRemove.length > 0) await chrome.storage.sync.remove(keysToRemove)
+
     setHasKey(!!apiKey.trim())
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)

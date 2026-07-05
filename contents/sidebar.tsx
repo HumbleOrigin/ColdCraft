@@ -1,7 +1,30 @@
 import { sendToBackground } from "@plasmohq/messaging"
 import type { PlasmoCSConfig, PlasmoGetStyle } from "plasmo"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Component, useCallback, useEffect, useRef, useState } from "react"
+import type { ErrorInfo, ReactNode } from "react"
 import type { GenerateMessageRequest, GenerateMessageResponse, SenderInfo, StyleExample } from "../background/messages/generateMessage"
+
+class SidebarErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false }
+  static getDerivedStateFromError() { return { hasError: true } }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("ColdCraft sidebar error:", error, info)
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 20, color: "#FF8080", fontFamily: "Inter, sans-serif", fontSize: 13, lineHeight: 1.6 }}>
+          <div style={{ marginBottom: 12, fontWeight: 600 }}>Something went wrong</div>
+          <div style={{ color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>ColdCraft hit an unexpected error. Click below to reload.</div>
+          <button onClick={() => this.setState({ hasError: false })} style={{ background: "#6C63FF", border: "none", color: "#fff", padding: "8px 16px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+            Reload sidebar
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 export const getStyle: PlasmoGetStyle = () => {
   const style = document.createElement("style")
@@ -196,9 +219,11 @@ function Sidebar() {
     }
   }
 
-  const saveToHistory = async (text: string) => {
-    const entry = { text, date: new Date().toISOString(), recipientName: profile.name || "Unknown" }
-    const updated = [entry, ...history].slice(0, 50)
+  const saveToHistory = async (texts: string[]) => {
+    const now = new Date().toISOString()
+    const name = profile.name || "Unknown"
+    const entries = texts.map((text) => ({ text, date: now, recipientName: name }))
+    const updated = [...entries, ...history].slice(0, 50)
     setHistory(updated)
     await chrome.storage.local.set({ message_history: updated })
   }
@@ -290,11 +315,14 @@ function Sidebar() {
     await chrome.storage.local.set({ style_examples: updated })
   }
 
+  const generatingRef = useRef(false)
   const generateMessage = useCallback(async () => {
+    if (generatingRef.current) return
     if (!senderInfo?.name) {
       setError("Fill in your info in the 'About You' section first so the message isn't signed with a fake name.")
       return
     }
+    generatingRef.current = true
     setLoading(true)
     setError("")
     setVariants([])
@@ -328,14 +356,15 @@ function Sidebar() {
         setError(response.error)
       } else if (response.variants) {
         setVariants(response.variants)
-        if (response.variants[0]) {
-          saveToHistory(response.variants[0])
+        if (response.variants.length > 0) {
+          saveToHistory(response.variants)
         }
       }
     } catch (err) {
       setError("Failed to connect to background service. Try reloading.")
     }
 
+    generatingRef.current = false
     setLoading(false)
   }, [senderInfo, profile, rawProfileText, referralName, customInstructions, selectedHook, messageType, variantCount])
 
@@ -369,7 +398,7 @@ function Sidebar() {
           top: 0;
           right: 0;
           height: 100vh;
-          width: 360px;
+          width: min(360px, 90vw);
           background: #0A0F1E;
           color: #fff;
           z-index: 2147483647;
@@ -380,7 +409,7 @@ function Sidebar() {
           overflow: hidden;
         }
 
-        .lcmg-sidebar.collapsed { transform: translateX(360px); }
+        .lcmg-sidebar.collapsed { transform: translateX(min(360px, 90vw)); }
 
         .lcmg-tab {
           position: fixed; right: 0; top: 50%; transform: translateY(-50%);
@@ -393,7 +422,7 @@ function Sidebar() {
           z-index: 2147483647;
         }
         .lcmg-tab:hover { background: #7B74FF; width: 48px; }
-        .lcmg-tab.sidebar-open { right: 360px; }
+        .lcmg-tab.sidebar-open { right: min(360px, 90vw); }
         .lcmg-tab-arrow { font-size: 16px; color: #fff; line-height: 1; }
         .lcmg-tab-logo { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 0.5px; line-height: 1; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
 
@@ -875,4 +904,12 @@ function Sidebar() {
   )
 }
 
-export default Sidebar
+function SidebarWithErrorBoundary() {
+  return (
+    <SidebarErrorBoundary>
+      <Sidebar />
+    </SidebarErrorBoundary>
+  )
+}
+
+export default SidebarWithErrorBoundary

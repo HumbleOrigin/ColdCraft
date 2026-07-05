@@ -1,15 +1,21 @@
 # ColdCraft — LinkedIn Cold Message Generator
 
-An AI-powered Chrome extension that injects a polished sidebar into LinkedIn profile pages and uses the Claude API to generate personalized cold outreach messages.
+An AI-powered Chrome extension that injects a polished sidebar into LinkedIn profile pages and generates personalized cold outreach messages using Claude or OpenAI-compatible APIs.
 
 ## Features
 
-- 🔍 **Auto-scrapes** LinkedIn profiles (name, title, company, skills, experience, education)
-- ✦ **4 message goals**: Networking, Job Inquiry, Sales, Partnership
-- 🎛 **Tone & length controls**: Casual/Professional/Friendly × Short/Medium/Long
-- 📝 **Editable output** with one-click copy
-- 🔄 **Regenerate** with same settings
-- 🔒 API key stored securely in Chrome sync storage
+- **Auto-scrapes** LinkedIn profiles (name, title, company, experience, education)
+- **4 message types**: Cold outreach, Thank-you, Follow-up, Circle back
+- **Hook extraction**: AI finds 3-5 personal details from the profile to reference
+- **Multiple variants**: Generate 1-5 message variants per request
+- **Style learning**: Rate messages thumbs up/down to steer future generations
+- **Editable output** with one-click copy and word count
+- **Message history**: Browse and reuse past messages
+- **Referral mode**: Mention a mutual contact as the opening hook
+- **Multi-provider AI**: Anthropic (Claude), OpenAI, OpenRouter, Groq, Mistral
+- **Sender profile**: Import your own LinkedIn page or fill in manually
+- **Resume context**: Paste your resume for richer shared-interest matching
+- API key stored locally in Chrome — never leaves your device except when calling the AI provider
 
 ---
 
@@ -38,16 +44,21 @@ The extension will walk you through setting up your API key on first use.
 ### 2. Install Dependencies
 
 ```bash
-cd linkedin-cold-message
+cd ColdCraft
 pnpm install
 ```
 
-### 3. Get an Anthropic API Key
+### 3. Get an API Key
 
+**Anthropic (default):**
 1. Go to [console.anthropic.com](https://console.anthropic.com)
 2. Sign up or log in
 3. Navigate to **API Keys** → **Create Key**
 4. Copy the key (starts with `sk-ant-...`)
+
+**OpenAI or compatible providers:**
+1. Get a key from your provider's dashboard
+2. In ColdCraft settings, switch to "OpenAI / Compatible" and set the Base URL if needed
 
 ### 4. Start Development Build
 
@@ -70,13 +81,13 @@ This builds the extension into the `build/chrome-mv3-dev/` directory and watches
 After loading the extension:
 - Click the ColdCraft extension icon in Chrome toolbar
 - Click **Settings & API Key**
-- Paste your Anthropic API key and save
+- Paste your API key and save
 
 OR
 
 - Navigate to any LinkedIn profile (`linkedin.com/in/...`)
 - The sidebar appears on the right
-- Enter your API key directly in the sidebar's inline prompt
+- Open Settings (gear icon) and enter your API key
 
 ---
 
@@ -84,11 +95,13 @@ OR
 
 1. Go to any LinkedIn profile page (e.g., `https://www.linkedin.com/in/username`)
 2. The ColdCraft sidebar appears on the right side of the page
-3. The extension automatically reads the profile data
-4. Select your **goal**, **tone**, and **length**
-5. Optionally add custom context in the textarea
-6. Click **✦ Generate Message**
-7. Edit the generated message if needed, then **Copy** and paste into LinkedIn
+3. The extension automatically reads the profile and extracts hook details
+4. Click a hook badge to prioritize it, or let the AI choose
+5. Select a message type (Cold outreach, Thank-you, Follow-up, Circle back)
+6. Optionally expand "More options" to add a referral name or extra context
+7. Adjust variant count (1-5) and click **Generate Message**
+8. Edit the generated message if needed, then **Copy** and paste into LinkedIn
+9. Rate messages with thumbs up/down to improve future generations
 
 ---
 
@@ -106,14 +119,18 @@ Output is in `build/chrome-mv3-prod/`. You can then zip this folder and upload t
 
 ```
 ├── contents/
-│   └── sidebar.tsx          # Injected sidebar UI (content script)
+│   └── sidebar.tsx              # Injected sidebar UI (content script)
 ├── background/
+│   ├── aiClient.ts              # Multi-provider AI client
 │   └── messages/
-│       └── generateMessage.ts  # Service worker handling API calls
-├── options.tsx              # Settings page for API key management
-├── popup.tsx                # Extension popup (usage instructions)
+│       ├── generateMessage.ts   # Message generation handler
+│       ├── extractRecipientHooks.ts  # Hook detail extraction
+│       └── extractSenderProfile.ts   # Sender profile extraction
+├── options.tsx                  # Settings page (provider, API key, model)
+├── popup.tsx                    # Extension popup (usage instructions)
 ├── package.json
 ├── tsconfig.json
+├── DESIGN.md                    # Design system documentation
 └── README.md
 ```
 
@@ -123,9 +140,9 @@ Output is in `build/chrome-mv3-prod/`. You can then zip this folder and upload t
 
 | Problem | Fix |
 |---------|-----|
-| "Invalid API key (401)" | Your key is wrong or revoked. Go to [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) and create a new one. |
+| "Invalid API key (401)" | Your key is wrong or revoked. Create a new one from your provider's dashboard. |
 | "Rate limited (429)" | Too many requests. Wait 30 seconds and try again. |
-| "Insufficient credits" | Your account needs billing. Add a payment method at [console.anthropic.com/settings/billing](https://console.anthropic.com/settings/billing). |
+| "Insufficient credits" | Your account needs billing. Add a payment method in your provider's console. |
 | Sidebar doesn't appear | Make sure you're on a `linkedin.com/in/...` profile page. Try refreshing the page. |
 | "Failed to connect to background service" | Reload the extension: go to `chrome://extensions/`, find ColdCraft, click the refresh icon. |
 | Profile data not loading | LinkedIn's page structure changes. Click "Rescrape" in the sidebar, or reload the LinkedIn page. |
