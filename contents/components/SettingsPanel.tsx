@@ -129,7 +129,7 @@ export default function SettingsPanel({
         {hasApiKey ? (
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Key saved {"✓"}</span>
-            <button className="lcmg-btn-ghost" style={{ fontSize: 11 }} onClick={async () => { await chrome.storage.sync.remove("ai_api_key"); setApiKeyInput("") }}>Change</button>
+            <button className="lcmg-btn-ghost" style={{ fontSize: 11 }} onClick={async () => { await chrome.storage.local.remove("ai_api_key"); await chrome.storage.sync.remove("ai_api_key"); setApiKeyInput("") }}>Change</button>
           </div>
         ) : (
           <>

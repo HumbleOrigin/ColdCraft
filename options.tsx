@@ -12,10 +12,15 @@ function Options() {
   const models = provider === "anthropic" ? ANTHROPIC_MODELS : OPENAI_MODELS
 
   useEffect(() => {
-    chrome.storage.sync.get(["ai_provider", "ai_api_key", "ai_model", "ai_base_url"]).then((result) => {
+    Promise.all([
+      chrome.storage.local.get("ai_api_key"),
+      chrome.storage.sync.get(["ai_provider", "ai_api_key", "ai_model", "ai_base_url"])
+    ]).then(([local, result]) => {
       if (result.ai_provider) setProvider(result.ai_provider)
-      if (result.ai_api_key) {
-        setApiKey(result.ai_api_key)
+      // sync ai_api_key is a pre-1.0.3 leftover, shown until loadAIConfig migrates it
+      const key = local.ai_api_key || result.ai_api_key
+      if (key) {
+        setApiKey(key)
         setHasKey(true)
       }
       if (result.ai_model) setModel(result.ai_model)
@@ -26,16 +31,16 @@ function Options() {
   const save = async () => {
     const settings: Record<string, string> = {
       ai_provider: provider,
-      ai_api_key: apiKey.trim(),
     }
     if (model.trim()) settings.ai_model = model.trim()
     if (baseUrl.trim()) settings.ai_base_url = baseUrl.trim()
     await chrome.storage.sync.set(settings)
+    await chrome.storage.local.set({ ai_api_key: apiKey.trim() })
 
-    const keysToRemove: string[] = []
+    const keysToRemove: string[] = ["ai_api_key"] // clear any pre-1.0.3 key left in sync
     if (!model.trim()) keysToRemove.push("ai_model")
     if (!baseUrl.trim()) keysToRemove.push("ai_base_url")
-    if (keysToRemove.length > 0) await chrome.storage.sync.remove(keysToRemove)
+    await chrome.storage.sync.remove(keysToRemove)
 
     setHasKey(!!apiKey.trim())
     setSaved(true)
@@ -44,6 +49,7 @@ function Options() {
 
   const remove = async () => {
     await chrome.storage.sync.remove(["ai_provider", "ai_api_key", "ai_model", "ai_base_url"])
+    await chrome.storage.local.remove("ai_api_key")
     setApiKey("")
     setModel("")
     setBaseUrl("")
@@ -102,8 +108,8 @@ function Options() {
         <h1>Settings</h1>
         <p className="subtitle">
           Configure your AI provider and API key to power message generation.
-          Your key is stored locally in Chrome and never leaves your device
-          except when calling the AI provider's API.
+          Your key is stored on this device in Chrome's local extension storage
+          and is sent only to your chosen AI provider's API.
         </p>
 
         <div className="card">
@@ -118,7 +124,7 @@ function Options() {
               <button
                 className={`provider-btn${provider === "openai" ? " active" : ""}`}
                 onClick={() => setProvider("openai")}>
-                OpenAI / Compatible (GPT, Gemini, Groq, OpenRouter, Mistral…)
+                OpenAI / Compatible (GPT, OpenRouter…)
               </button>
             </div>
           </div>
@@ -165,7 +171,7 @@ function Options() {
                 onChange={(e) => setBaseUrl(e.target.value)}
               />
               <div className="field-hint">
-                Change for OpenRouter (openrouter.ai/api/v1), Groq (api.groq.com/openai/v1), or other compatible APIs
+                Change for OpenRouter (openrouter.ai/api/v1). OpenRouter also proxies most other providers' models.
               </div>
             </div>
           )}

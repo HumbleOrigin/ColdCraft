@@ -6,6 +6,7 @@ import type { GenerateMessageRequest, GenerateMessageResponse, SenderInfo, Style
 import { ANTHROPIC_MODELS, OPENAI_MODELS, type ModelOption } from "../background/aiClient"
 import SettingsPanel from "./components/SettingsPanel"
 import HistoryPanel from "./components/HistoryPanel"
+import TrainingDataPanel from "./components/TrainingDataPanel"
 import MessageOutput from "./components/MessageOutput"
 import ProfileSection from "./components/ProfileSection"
 
@@ -117,11 +118,21 @@ function Sidebar() {
   const [selectedHook, setSelectedHook] = useState<string | null>(null)
 
   const [messageType, setMessageType] = useState<"cold" | "thank_you" | "follow_up" | "circle_back">("cold")
+  const [conversationContext, setConversationContext] = useState("")
   const [variantCount, setVariantCount] = useState(2)
+  // LinkedIn caps connection-request notes at 300 characters; regular messages have no practical limit
+  const [sendFormat, setSendFormat] = useState<"note" | "message">("note")
   const [showMoreOptions, setShowMoreOptions] = useState(false)
 
   const [showHistory, setShowHistory] = useState(false)
   const [history, setHistory] = useState<Array<{ text: string; date: string; recipientName: string }>>([])
+
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [showTrainingData, setShowTrainingData] = useState(false)
+  const [styleExamples, setStyleExamples] = useState<StyleExample[]>([])
+  const [styleTrainingEnabled, setStyleTrainingEnabled] = useState(false)
+  const [ratedVariants, setRatedVariants] = useState<Record<number, "up" | "down">>({})
+  const [variantContexts, setVariantContexts] = useState<Record<number, string>>({})
 
   const [tokenUsage, setTokenUsage] = useState<{ inputTokens: number; outputTokens: number } | null>(null)
   const [activeModel, setActiveModel] = useState<ModelOption | null>(null)
@@ -135,6 +146,7 @@ function Sidebar() {
     loadProfile()
     loadSenderInfo()
     loadHistory()
+    loadTrainingData()
 
     const handleMessage = (msg: { type: string }) => {
       if (msg.type === "OPEN_SIDEBAR") setCollapsed(false)
@@ -149,6 +161,9 @@ function Sidebar() {
         setHookDetails([])
         setSelectedHook(null)
         setTokenUsage(null)
+        setConversationContext("")
+        setRatedVariants({})
+        setVariantContexts({})
         variantsEdited.current = false
         loadProfile()
       }
@@ -167,8 +182,10 @@ function Sidebar() {
   }, [])
 
   const checkApiKey = async () => {
+    const local = await chrome.storage.local.get("ai_api_key")
     const result = await chrome.storage.sync.get(["ai_api_key", "ai_provider", "ai_model", "coldcraft_welcomed"])
-    setHasApiKey(!!result.ai_api_key)
+    // ai_api_key in sync is a pre-1.0.3 leftover; loadAIConfig migrates it to local
+    setHasApiKey(!!local.ai_api_key || !!result.ai_api_key)
     if (!result.coldcraft_welcomed) {
       setIsFirstVisit(true)
     }
@@ -273,22 +290,63 @@ function Sidebar() {
   const saveApiKey = async () => {
     if (!apiKeyInput.trim()) return
     setSavingKey(true)
-    await chrome.storage.sync.set({ ai_api_key: apiKeyInput.trim() })
+    await chrome.storage.local.set({ ai_api_key: apiKeyInput.trim() })
     setHasApiKey(true)
     setApiKeyInput("")
     setSavingKey(false)
   }
 
-  const loadStyleExamples = async (): Promise<StyleExample[]> => {
-    const result = await chrome.storage.local.get("style_examples")
-    return result.style_examples || []
+  const loadTrainingData = async () => {
+    const result = await chrome.storage.local.get(["style_examples", "style_training_enabled"])
+    if (Array.isArray(result.style_examples)) setStyleExamples(result.style_examples)
+    setStyleTrainingEnabled(!!result.style_training_enabled)
   }
 
-  const saveStyleExample = async (text: string, rating: "up" | "down", context?: string) => {
-    const examples = await loadStyleExamples()
-    const entry: StyleExample = { text, rating, date: new Date().toISOString(), context }
-    const updated = [entry, ...examples].slice(0, 20)
+  const persistStyleExamples = async (updated: StyleExample[]) => {
+    setStyleExamples(updated)
     await chrome.storage.local.set({ style_examples: updated })
+  }
+
+  const rateVariant = async (index: number, rating: "up" | "down") => {
+    const msg = variants[index] ?? ""
+    if (!msg.trim()) return
+    const alreadyRated = ratedVariants[index]
+    if (alreadyRated === rating) {
+      // toggle off: remove the rating and its example
+      const updated = { ...ratedVariants }
+      delete updated[index]
+      setRatedVariants(updated)
+      const updatedCtx = { ...variantContexts }
+      delete updatedCtx[index]
+      setVariantContexts(updatedCtx)
+      await persistStyleExamples(styleExamples.filter((e) => e.text !== msg))
+      return
+    }
+    const filtered = styleExamples.filter((e) => e.text !== msg)
+    if (filtered.length >= 10 && !alreadyRated) return // library full
+    if (alreadyRated) {
+      const updatedCtx = { ...variantContexts }
+      delete updatedCtx[index]
+      setVariantContexts(updatedCtx)
+    }
+    setRatedVariants({ ...ratedVariants, [index]: rating })
+    const entry: StyleExample = { text: msg, rating, date: new Date().toISOString() }
+    await persistStyleExamples([...filtered, entry].slice(-10))
+  }
+
+  const contextTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({})
+  const commitVariantContext = (index: number, context: string) => {
+    const msg = variants[index] ?? ""
+    persistStyleExamples(styleExamples.map((e) => e.text === msg ? { ...e, context: context.trim() || undefined } : e))
+  }
+  const handleVariantContextChange = (index: number, context: string) => {
+    setVariantContexts({ ...variantContexts, [index]: context })
+    if (contextTimers.current[index]) clearTimeout(contextTimers.current[index])
+    contextTimers.current[index] = setTimeout(() => commitVariantContext(index, context), 1000)
+  }
+  const handleVariantContextCommit = (index: number) => {
+    if (contextTimers.current[index]) clearTimeout(contextTimers.current[index])
+    commitVariantContext(index, variantContexts[index] || "")
   }
 
   const generatingRef = useRef(false)
@@ -309,6 +367,8 @@ function Sidebar() {
     setError("")
     setVariants([])
     setTokenUsage(null)
+    setRatedVariants({})
+    setVariantContexts({})
     variantsEdited.current = false
 
     const progressSteps = [
@@ -324,7 +384,8 @@ function Sidebar() {
       setProgressText(progressSteps[stepIndex])
     }, 3000)
 
-    const styleExamples = await loadStyleExamples()
+    // examples only steer generations while style training is switched on
+    const activeExamples = styleTrainingEnabled ? styleExamples : []
 
     try {
       const response = await sendToBackground<
@@ -340,8 +401,9 @@ function Sidebar() {
           customInstructions: customInstructions.trim() || undefined,
           selectedHook: selectedHook || undefined,
           messageType,
+          conversationContext: conversationContext.trim() || undefined,
           variantCount,
-          styleExamples: styleExamples.length > 0 ? styleExamples : undefined
+          styleExamples: activeExamples.length > 0 ? activeExamples : undefined
         }
       })
 
@@ -366,7 +428,7 @@ function Sidebar() {
     setProgressText("")
     generatingRef.current = false
     setLoading(false)
-  }, [senderInfo, profile, rawProfileText, referralName, customInstructions, selectedHook, messageType, variantCount, variants])
+  }, [senderInfo, profile, rawProfileText, referralName, customInstructions, selectedHook, messageType, conversationContext, variantCount, variants, styleExamples, styleTrainingEnabled])
 
   const handleVariantEdit = (index: number, text: string) => {
     variantsEdited.current = true
@@ -473,7 +535,7 @@ function Sidebar() {
         .lcmg-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .lcmg-btn-primary:focus-visible, .lcmg-btn-ghost:focus-visible, .lcmg-btn-sm:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
         .lcmg-close-btn:focus-visible, .lcmg-gear-btn:focus-visible, .lcmg-settings-back:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
-        .lcmg-variant-btn:focus-visible, .lcmg-chip:focus-visible, .lcmg-badge:focus-visible, .lcmg-you-pill:focus-visible, .lcmg-thumb-btn:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        .lcmg-variant-btn:focus-visible, .lcmg-chip:focus-visible, .lcmg-badge:focus-visible, .lcmg-you-pill:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
         .lcmg-btn-ghost { background: none; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-size: 12.5px; font-weight: 500; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
         .lcmg-btn-ghost:hover { border-color: rgba(255,255,255,0.3); color: #fff; background: rgba(255,255,255,0.04); }
         .lcmg-btn-sm { background: rgba(37,99,235,0.15); border: 1px solid rgba(37,99,235,0.3); color: #93c5fd; font-size: 11.5px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
@@ -546,8 +608,60 @@ function Sidebar() {
         .lcmg-variant-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .lcmg-variant-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .lcmg-thumb-btn { background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 6px 8px; cursor: pointer; font-size: 12px; transition: all 0.15s; color: rgba(255,255,255,0.4); }
-        .lcmg-thumb-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .lcmg-rate-btn { background: none; border: 1px solid transparent; border-radius: 4px; cursor: pointer; padding: 3px 5px; color: rgba(255,255,255,0.35); transition: color 0.15s, border-color 0.15s, background 0.15s; line-height: 1; display: flex; align-items: center; justify-content: center; }
+        .lcmg-rate-btn:hover { color: rgba(255,255,255,0.6); }
+        .lcmg-rate-btn.active-up { color: #5FD98C; border-color: rgba(95,217,140,0.3); background: rgba(95,217,140,0.08); }
+        .lcmg-rate-btn.active-down { color: #f87171; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+        .lcmg-rate-btn:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+
+        /* Dropdown menu */
+        .lcmg-dropdown-wrap { position: relative; }
+        .lcmg-dropdown-backdrop { position: fixed; inset: 0; z-index: 9; }
+        .lcmg-dropdown { position: absolute; top: 100%; right: 0; margin-top: 4px; background: #141929; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 10; min-width: 180px; padding: 4px; overflow: hidden; }
+        .lcmg-dropdown-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: none; border: none; color: rgba(255,255,255,0.7); font-size: 12.5px; font-family: inherit; cursor: pointer; border-radius: 6px; transition: background 0.12s, color 0.12s; text-align: left; }
+        .lcmg-dropdown-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .lcmg-dropdown-item:focus-visible { outline: 2px solid #93c5fd; outline-offset: -2px; }
+        .lcmg-dropdown-icon { width: 16px; height: 16px; color: rgba(255,255,255,0.4); flex-shrink: 0; }
+
+        /* Training Data panel */
+        .lcmg-training-section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.3); margin-top: 8px; }
+        .lcmg-training-disclaimer { font-size: 10.5px; color: rgba(255,255,255,0.3); line-height: 1.5; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px; }
+
+        /* Condensed cards */
+        .lcmg-card-collapsed { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 12px; cursor: pointer; transition: background 0.12s, border-color 0.12s; }
+        .lcmg-card-collapsed:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+        .lcmg-card-collapsed.expanded { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); cursor: default; }
+        .lcmg-card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .lcmg-card-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+        .lcmg-card-meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .lcmg-card-date { font-size: 10px; color: rgba(255,255,255,0.25); }
+        .lcmg-card-chevron { font-size: 10px; color: rgba(255,255,255,0.2); transition: transform 0.2s; }
+        .lcmg-card-chevron.open { transform: rotate(180deg); }
+        .lcmg-card-preview { font-size: 11px; color: rgba(255,255,255,0.25); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; line-height: 1.3; }
+        .lcmg-card-body { overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.2s ease; }
+        .lcmg-card-body.open { max-height: 400px; opacity: 1; margin-top: 10px; }
+        .lcmg-card-message { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.6; white-space: pre-wrap; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+        .lcmg-card-actions { display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+
+        /* Context input for ratings */
+        .lcmg-context-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size: 11px; padding: 6px 9px; outline: none; font-family: inherit; line-height: 1.4; transition: border-color 0.15s; margin-top: 6px; }
+        .lcmg-context-input::placeholder { color: rgba(255,255,255,0.22); }
+        .lcmg-context-input:focus { border-color: #2563EB; }
+
+        .lcmg-cap-warning { font-size: 10.5px; color: #fbbf24; line-height: 1.4; margin-top: 4px; }
+
+        /* Confidence checks */
+        .lcmg-confidence-toggle { background: none; border: none; color: rgba(255,255,255,0.35); font-size: 10.5px; font-family: inherit; cursor: pointer; padding: 0; transition: color 0.15s; }
+        .lcmg-confidence-toggle:hover { color: rgba(255,255,255,0.65); }
+        .lcmg-confidence-list { display: flex; flex-direction: column; gap: 5px; }
+        .lcmg-confidence-item { display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 1.4; }
+        .lcmg-confidence-item.pass { color: rgba(255,255,255,0.55); }
+        .lcmg-confidence-item.warn { color: #fbbf24; }
+        .lcmg-confidence-item.fail { color: #f87171; }
+
+        /* Import confirmation */
+        .lcmg-import-confirm { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 10; padding: 20px; }
+        .lcmg-import-confirm-card { background: #141929; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 20px; max-width: 300px; width: 100%; display: flex; flex-direction: column; gap: 12px; }
 
         .lcmg-footer { padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: center; flex-shrink: 0; }
         .lcmg-footer-link { font-size: 10px; color: rgba(255,255,255,0.25); text-decoration: none; transition: color 0.15s; cursor: pointer; background: none; border: none; font-family: inherit; }
@@ -574,12 +688,30 @@ function Sidebar() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            <button className="lcmg-gear-btn" onClick={() => setShowHistory(true)} title="History">
-              {"☰"}
-            </button>
-            <button className="lcmg-gear-btn" onClick={() => { setSetupDraft(senderInfo ?? setupDraft); setShowSettings(true) }} title="Your Info">
-              {"⚙"}
-            </button>
+            <div className="lcmg-dropdown-wrap">
+              <button className="lcmg-gear-btn" onClick={() => setShowDropdown(!showDropdown)} title="Menu" aria-expanded={showDropdown} aria-haspopup="menu">
+                {"☰"}
+              </button>
+              {showDropdown && (
+                <>
+                  <div className="lcmg-dropdown-backdrop" onClick={() => setShowDropdown(false)} />
+                  <div className="lcmg-dropdown" role="menu">
+                    <button className="lcmg-dropdown-item" role="menuitem" onClick={() => { setShowDropdown(false); setShowHistory(true) }}>
+                      <svg className="lcmg-dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                      Message History
+                    </button>
+                    <button className="lcmg-dropdown-item" role="menuitem" onClick={() => { setShowDropdown(false); setShowTrainingData(true) }}>
+                      <svg className="lcmg-dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z"/></svg>
+                      Training Data
+                    </button>
+                    <button className="lcmg-dropdown-item" role="menuitem" onClick={() => { setShowDropdown(false); setSetupDraft(senderInfo ?? setupDraft); setShowSettings(true) }}>
+                      <svg className="lcmg-dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                      Settings
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
             <button className="lcmg-close-btn" onClick={() => setCollapsed(true)}>{"✕"}</button>
           </div>
         </div>
@@ -609,6 +741,17 @@ function Sidebar() {
           onClose={() => setShowHistory(false)}
           history={history}
           onSelect={(text) => { setVariants([text]); setShowHistory(false) }}
+        />
+
+        <TrainingDataPanel
+          open={showTrainingData}
+          onClose={() => setShowTrainingData(false)}
+          styleExamples={styleExamples}
+          onUpdateExamples={setStyleExamples}
+          styleTrainingEnabled={styleTrainingEnabled}
+          onToggleTraining={setStyleTrainingEnabled}
+          history={history}
+          onReplaceHistory={setHistory}
         />
 
         <div className="lcmg-scroll">
@@ -699,6 +842,27 @@ function Sidebar() {
             </div>
           </div>
 
+          {/* Conversation notes — keeps thank-you/follow-up messages grounded in what actually happened */}
+          {messageType !== "cold" && (
+            <div>
+              <div className="lcmg-section-label">
+                {messageType === "thank_you" ? "What did you discuss? (required)" : messageType === "follow_up" ? "Context on your first message (optional)" : "What did you talk about before? (optional)"}
+              </div>
+              <textarea
+                className="lcmg-textarea"
+                rows={2}
+                placeholder={messageType === "thank_you" ? "e.g. We talked about his path from S&T to M&A and his advice on networking" : "e.g. I reached out two weeks ago about their restructuring group"}
+                value={conversationContext}
+                onChange={(e) => setConversationContext(e.target.value)}
+              />
+              {messageType === "thank_you" && !conversationContext.trim() && (
+                <div style={{ fontSize: 10.5, color: "#FFB84D", marginTop: 4, lineHeight: 1.4 }}>
+                  Required so the message references your real conversation instead of made-up details.
+                </div>
+              )}
+            </div>
+          )}
+
           {/* More options toggle */}
           <button className="lcmg-more-toggle" onClick={() => setShowMoreOptions(!showMoreOptions)}>
             {showMoreOptions ? "▾" : "▸"} More options
@@ -723,8 +887,8 @@ function Sidebar() {
               className="lcmg-btn-primary"
               style={{ flex: 1 }}
               onClick={generateMessage}
-              disabled={loading || hasApiKey === false || !senderInfo?.name}>
-              {loading ? <>Generating...</> : !senderInfo?.name ? <>Set up your info first</> : <>{"✦"} Generate Message</>}
+              disabled={loading || hasApiKey === false || !senderInfo?.name || (messageType === "thank_you" && !conversationContext.trim())}>
+              {loading ? <>Generating...</> : !senderInfo?.name ? <>Set up your info first</> : messageType === "thank_you" && !conversationContext.trim() ? <>Add discussion notes first</> : <>{"✦"} Generate Message</>}
             </button>
             <div className="lcmg-variant-controls">
               <button className="lcmg-variant-btn" disabled={variantCount <= 1} onClick={() => setVariantCount((c) => Math.max(1, c - 1))}>{"−"}</button>
@@ -775,6 +939,17 @@ function Sidebar() {
             </div>
           )}
 
+          {/* Send format toggle */}
+          {variants.length > 0 && !loading && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="lcmg-section-label" style={{ marginBottom: 0 }}>Sending as</span>
+              <div className="lcmg-chip-row">
+                <span className={`lcmg-chip${sendFormat === "note" ? " active" : ""}`} onClick={() => setSendFormat("note")}>Connection note (300 chars)</span>
+                <span className={`lcmg-chip${sendFormat === "message" ? " active" : ""}`} onClick={() => setSendFormat("message")}>Message / InMail</span>
+              </div>
+            </div>
+          )}
+
           {/* Variants output */}
           {variants.length > 0 && !loading && variants.map((variant, index) => (
             <MessageOutput
@@ -782,8 +957,15 @@ function Sidebar() {
               variant={variant}
               index={index}
               totalVariants={variants.length}
+              charLimit={sendFormat === "note" ? 300 : null}
+              styleTrainingEnabled={styleTrainingEnabled}
+              rating={ratedVariants[index]}
+              ratingContext={variantContexts[index] || ""}
+              libraryFull={styleExamples.length >= 10}
               onEdit={handleVariantEdit}
-              onRate={saveStyleExample}
+              onRate={rateVariant}
+              onContextChange={handleVariantContextChange}
+              onContextCommit={handleVariantContextCommit}
             />
           ))}
 

@@ -2,6 +2,8 @@
 
 An AI-powered Chrome extension that injects a polished sidebar into LinkedIn profile pages and generates personalized cold outreach messages using Claude or OpenAI-compatible APIs.
 
+Built for **students and early-career professionals reaching out to investment bankers** — the message prompts encode IB networking norms: seniority-based greetings, humble one-line intros, specific personal hooks, and a casual 10-minute-call ask.
+
 ## Features
 
 - **Auto-scrapes** LinkedIn profiles (name, title, company, experience, education)
@@ -12,10 +14,10 @@ An AI-powered Chrome extension that injects a polished sidebar into LinkedIn pro
 - **Editable output** with one-click copy and word count
 - **Message history**: Browse and reuse past messages
 - **Referral mode**: Mention a mutual contact as the opening hook
-- **Multi-provider AI**: Anthropic (Claude), OpenAI, OpenRouter, Groq, Mistral
+- **Multi-provider AI**: Anthropic (Claude), OpenAI, OpenRouter (which proxies most other providers)
 - **Sender profile**: Import your own LinkedIn page or fill in manually
 - **Resume context**: Paste your resume for richer shared-interest matching
-- API key stored locally in Chrome — never leaves your device except when calling the AI provider
+- API key stored on your device in Chrome's local extension storage — sent only to your chosen AI provider
 
 ---
 
@@ -152,7 +154,7 @@ Output is in `build/chrome-mv3-prod/`. You can then zip this folder and upload t
 ## Notes
 
 - The extension only activates on `https://www.linkedin.com/in/*` profile pages
-- Your API key is stored in `chrome.storage.sync` and syncs across your Chrome profile
+- Your API key is stored in `chrome.storage.local` on this device only (it does not sync); non-secret settings like your sender profile use `chrome.storage.sync`
 - The API key is only read from the background service worker — it never touches page context
 - LinkedIn's DOM structure changes frequently; if scraping stops working, the extension will warn you and still allow generation with whatever data was found
 - Each message costs roughly $0.002-$0.005 (less than a penny)

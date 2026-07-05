@@ -5,3 +5,4 @@ build/
 *.zip
 .gstack/
 .DS_Store
+tsconfig.tsbuildinfo

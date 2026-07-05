@@ -120,12 +120,24 @@ export async function callAI(
   }
 }
 
+// The API key lives in chrome.storage.local so it stays on this device
+// (storage.sync uploads to Google's sync servers). Non-secret settings stay in sync.
 export async function loadAIConfig(): Promise<AIConfig | null> {
+  const local = await chrome.storage.local.get("ai_api_key")
   const result = await chrome.storage.sync.get(["ai_provider", "ai_api_key", "ai_model", "ai_base_url"])
-  if (!result.ai_api_key) return null
+
+  let apiKey: string | undefined = local.ai_api_key
+  if (!apiKey && result.ai_api_key) {
+    // One-time migration from pre-1.0.3 installs that kept the key in storage.sync
+    apiKey = result.ai_api_key
+    await chrome.storage.local.set({ ai_api_key: apiKey })
+    await chrome.storage.sync.remove("ai_api_key")
+  }
+  if (!apiKey) return null
+
   return {
     provider: result.ai_provider || "anthropic",
-    apiKey: result.ai_api_key,
+    apiKey,
     model: result.ai_model || (result.ai_provider === "openai" ? "gpt-4o" : "claude-sonnet-4-6"),
     baseUrl: result.ai_base_url || undefined
   }

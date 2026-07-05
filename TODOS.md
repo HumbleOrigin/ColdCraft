@@ -40,5 +40,26 @@ Inter woff2 loaded from `assets/fonts/inter-latin.woff2` via `chrome.runtime.get
 ### ~~P3 — Replace URL polling with browser navigation API~~ ✅ DONE
 Replaced 500ms setInterval with popstate + visibilitychange event listeners and a MutationObserver on the document title element.
 
-### P3 — Consider chrome.storage.session for API keys
-Evaluated and deferred. Trade-off: tighter security (key scoped to service worker lifetime) but key won't persist across browser restarts, which is a bad UX for the target user (students who don't want to re-enter keys). Current approach (chrome.storage.sync) is acceptable since keys never touch page context.
+### ~~P3 — Consider chrome.storage.session for API keys~~ ✅ RESOLVED (2026-07-05)
+Resolved via `chrome.storage.local` instead: key persists across restarts (unlike `session`) but stays on-device (unlike `sync`, which uploads to Google's sync servers). One-time migration from sync runs in `loadAIConfig`.
+
+## From Audit Fixes (2026-07-05, v1.0.3)
+
+### ~~Fabricated details in thank-you/follow-up messages~~ ✅ DONE
+Conversation-notes field added for non-cold message types (required for thank-you). Prompt instructs the model to reference only the sender's notes and never invent past-interaction details.
+
+### ~~False "never leaves your device" privacy claim~~ ✅ DONE
+API key moved to chrome.storage.local; README, options page, and PRIVACY_POLICY.md corrected.
+
+### ~~Docs/product mismatch~~ ✅ DONE
+CLAUDE.md and README now describe the real product (IB-student outreach, actual message types).
+
+### ~~Connection-note char limit~~ ✅ DONE
+Note/Message toggle + 300-char counter on message output.
+
+### ~~Unused host permissions~~ ✅ DONE
+Groq and Mistral host_permissions removed.
+
+## Candidate next items
+- Reply tracking: "they replied" toggle on history entries (the real success metric)
+- One-click insert into LinkedIn's connection-note/message box

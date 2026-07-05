@@ -39,23 +39,30 @@ Chrome runtime messaging between content script and background service worker:
 Multi-provider support via `aiClient.ts`:
 - **Anthropic** (default) — Claude Sonnet 4.6, Opus 4.6, Haiku 4.5
 - **OpenAI** — GPT-4o, GPT-4o-mini, GPT-4.1, GPT-4.1-mini
-- **OpenRouter, Groq, Mistral** — also supported via host_permissions
+- **OpenRouter** — supported via the OpenAI-compatible base URL (has its own host_permissions entry)
 
 Default model: `claude-sonnet-4-6` (Anthropic) / `gpt-4o` (OpenAI).
 
 ### Storage
-- `chrome.storage.sync` — API key, sender profile, settings (syncs across devices)
-- `chrome.storage.local` — larger data (resume text, LinkedIn profile context)
+- `chrome.storage.local` — API key (device-only, never synced), resume text, LinkedIn profile context, message history, style examples
+- `chrome.storage.sync` — sender profile and non-secret settings (provider, model, base URL; syncs across devices)
 - No external backend, no analytics, no telemetry
 
+## Product Focus
+ColdCraft is built for **students and early-career professionals cold-messaging investment bankers**. The generation prompt encodes IB networking norms (seniority-based greetings, humble intros, banned clichés, casual questions). Keep this niche in mind — the sender profile is school/year/status/target-area, not a generic persona.
+
 ## Key Features
-- Auto-scrapes LinkedIn profiles (name, title, company, skills, experience, education)
-- 4 message goals: Networking, Job Inquiry, Sales, Partnership
-- Tone (Casual/Professional/Friendly) and length (Short/Medium/Long) controls
-- Multiple message variants generated per request
-- Editable output with one-click copy
+- Auto-scrapes LinkedIn profiles (raw page text + hook extraction)
+- 4 message types: Cold outreach, Thank-you, Follow-up, Circle back
+- Conversation-notes field for thank-you/follow-up/circle-back (required for thank-you) so messages never invent details of past interactions
+- Multiple message variants (1-5) per request
+- Editable output with one-click copy, word count, and connection-note (300 char) counter
 - Sender profile + optional resume for personalization
 - Hook extraction: AI finds 3-5 personal details to reference
+- Style learning: thumbs up/down (SVG) with optional context notes, fed back into prompts; gated by a "Learn from my feedback" toggle (default off)
+- Training Data panel (via header dropdown menu): manage rated examples (10 max, 4 used per generation), export/import JSON backups
+- Confidence checks per variant (word count, question, CTA, generic-phrase detection)
+- Message history panel (last 50, stored locally)
 
 ## Build & Dev Commands
 ```bash
@@ -70,14 +77,10 @@ Load in Chrome: `chrome://extensions/` → Developer mode → Load unpacked → 
 Only injects on `https://www.linkedin.com/in/*` profile pages (configured in manifest `content_scripts.matches`).
 
 ## Current Version
-1.0.1
+1.1.0
 
 ## Active TODOs
-See TODOS.md for the prioritized backlog. Key open items:
-- P1: Configurable variant count (1-5)
-- P2: Confirmation before clearing edited variants
-- P2: First-time welcome flow with guided API key setup
-- P2: Model dropdown and token usage display
+See TODOS.md for the backlog. All items from the 2026-07-01 design review and 2026-07-05 audit are done. Candidate next items: reply tracking on history entries, one-click insert into LinkedIn's message box.
 
 ## Conventions
 
