@@ -462,6 +462,11 @@ function Sidebar() {
         .lcmg-skeleton { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
         .lcmg-skeleton-line { height: 12px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.06) 100%); background-size: 200% 100%; animation: lcmg-shimmer 1.5s infinite; }
         @keyframes lcmg-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        @media (prefers-reduced-motion: reduce) {
+          .lcmg-sidebar, .lcmg-settings, .lcmg-tab { transition: none; }
+          .lcmg-skeleton-line { animation: none; }
+          .lcmg-btn-primary, .lcmg-btn-ghost, .lcmg-btn-sm, .lcmg-badge, .lcmg-chip { transition: none; }
+        }
 
         .lcmg-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 0 -20px; }
         .lcmg-copied-badge { display: inline-flex; align-items: center; gap: 4px; color: #5FD98C; font-size: 11.5px; font-weight: 500; }
