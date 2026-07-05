@@ -402,7 +402,7 @@ function Sidebar() {
         .lcmg-logo-icon { width: 28px; height: 28px; background: #2563EB; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
         .lcmg-logo-text { font-size: 13px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
         .lcmg-logo-sub { font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 400; margin-top: 1px; }
-        .lcmg-close-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; transition: color 0.15s; font-size: 18px; line-height: 1; }
+        .lcmg-close-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 8px; border-radius: 6px; display: flex; align-items: center; transition: color 0.15s; font-size: 18px; line-height: 1; }
         .lcmg-close-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
 
         .lcmg-scroll { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
@@ -466,7 +466,7 @@ function Sidebar() {
         .lcmg-settings { position: absolute; inset: 0; background: #0A0F1E; z-index: 10; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
         .lcmg-settings.open { transform: translateX(0); }
         .lcmg-settings-header { padding: 16px 20px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-        .lcmg-settings-back { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 4px; border-radius: 4px; transition: color 0.15s; }
+        .lcmg-settings-back { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 16px; line-height: 1; padding: 8px; border-radius: 6px; transition: color 0.15s; }
         .lcmg-settings-back:hover { color: #fff; }
         .lcmg-settings-title { font-size: 13px; font-weight: 600; color: #fff; }
         .lcmg-settings-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
@@ -479,7 +479,7 @@ function Sidebar() {
         .lcmg-you-pill-sub { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .lcmg-you-pill-arrow { font-size: 12px; color: rgba(255,255,255,0.25); flex-shrink: 0; }
 
-        .lcmg-gear-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 4px; border-radius: 4px; font-size: 15px; line-height: 1; display: flex; align-items: center; transition: color 0.15s; }
+        .lcmg-gear-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 8px; border-radius: 6px; font-size: 15px; line-height: 1; display: flex; align-items: center; transition: color 0.15s; }
         .lcmg-gear-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
 
         .lcmg-welcome { background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.2); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -498,11 +498,11 @@ function Sidebar() {
         .lcmg-more-toggle:hover { color: rgba(255,255,255,0.7); }
 
         .lcmg-variant-controls { display: flex; align-items: center; gap: 8px; }
-        .lcmg-variant-btn { width: 24px; height: 24px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.15s; }
+        .lcmg-variant-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.15s; }
         .lcmg-variant-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .lcmg-variant-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .lcmg-thumb-btn { background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; cursor: pointer; font-size: 12px; transition: all 0.15s; color: rgba(255,255,255,0.4); }
+        .lcmg-thumb-btn { background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 6px 8px; cursor: pointer; font-size: 12px; transition: all 0.15s; color: rgba(255,255,255,0.4); }
         .lcmg-thumb-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
 
         .lcmg-footer { padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: center; flex-shrink: 0; }
