@@ -1,30 +1,44 @@
 import { useEffect, useState } from "react"
 
 function Options() {
+  const [provider, setProvider] = useState<"anthropic" | "openai">("anthropic")
   const [apiKey, setApiKey] = useState("")
+  const [model, setModel] = useState("")
+  const [baseUrl, setBaseUrl] = useState("")
   const [saved, setSaved] = useState(false)
   const [hasKey, setHasKey] = useState(false)
 
   useEffect(() => {
-    chrome.storage.sync.get("anthropic_api_key").then((result) => {
-      if (result.anthropic_api_key) {
+    chrome.storage.sync.get(["ai_provider", "ai_api_key", "ai_model", "ai_base_url"]).then((result) => {
+      if (result.ai_provider) setProvider(result.ai_provider)
+      if (result.ai_api_key) {
+        setApiKey(result.ai_api_key)
         setHasKey(true)
-        setApiKey(result.anthropic_api_key)
       }
+      if (result.ai_model) setModel(result.ai_model)
+      if (result.ai_base_url) setBaseUrl(result.ai_base_url)
     })
   }, [])
 
   const save = async () => {
-    await chrome.storage.sync.set({ anthropic_api_key: apiKey.trim() })
+    await chrome.storage.sync.set({
+      ai_provider: provider,
+      ai_api_key: apiKey.trim(),
+      ai_model: model.trim() || undefined,
+      ai_base_url: baseUrl.trim() || undefined
+    })
     setHasKey(!!apiKey.trim())
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }
 
   const remove = async () => {
-    await chrome.storage.sync.remove("anthropic_api_key")
+    await chrome.storage.sync.remove(["ai_provider", "ai_api_key", "ai_model", "ai_base_url"])
     setApiKey("")
+    setModel("")
+    setBaseUrl("")
     setHasKey(false)
+    setProvider("anthropic")
   }
 
   return (
@@ -56,6 +70,12 @@ function Options() {
         .note { font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.6; }
         a { color: #6C63FF; text-decoration: none; }
         a:hover { text-decoration: underline; }
+        .provider-toggle { display: flex; gap: 8px; margin-bottom: 4px; }
+        .provider-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.15s; }
+        .provider-btn.active { background: rgba(108,99,255,0.15); border-color: rgba(108,99,255,0.4); color: #A89EFF; }
+        .provider-btn:hover:not(.active) { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); }
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field-hint { font-size: 11px; color: rgba(255,255,255,0.3); }
       `}</style>
       <div className="page">
         <div className="logo">
@@ -64,31 +84,78 @@ function Options() {
         </div>
         <h2>Settings</h2>
         <p className="subtitle">
-          Configure your Anthropic API key to power AI message generation.
+          Configure your AI provider and API key to power message generation.
           Your key is stored locally in Chrome and never leaves your device
-          except when calling Anthropic's API.
+          except when calling the AI provider's API.
         </p>
 
         <div className="card">
           <div>
-            <div className="label">Anthropic API Key</div>
-            <div className="input-row">
-              <input
-                type="password"
-                placeholder="sk-ant-..."
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && save()}
-              />
-              <button className="btn-primary" onClick={save}>
-                {saved ? "Saved ✓" : "Save"}
+            <div className="label">Provider</div>
+            <div className="provider-toggle">
+              <button
+                className={`provider-btn${provider === "anthropic" ? " active" : ""}`}
+                onClick={() => setProvider("anthropic")}>
+                Anthropic (Claude)
+              </button>
+              <button
+                className={`provider-btn${provider === "openai" ? " active" : ""}`}
+                onClick={() => setProvider("openai")}>
+                OpenAI / Compatible (GPT, Gemini, Groq, OpenRouter, Mistral…)
               </button>
             </div>
           </div>
 
+          <div className="field">
+            <div className="label">API Key</div>
+            <div className="input-row">
+              <input
+                type="password"
+                placeholder={provider === "anthropic" ? "sk-ant-..." : "sk-..."}
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && save()}
+              />
+            </div>
+          </div>
+
+          <div className="field">
+            <div className="label">Model</div>
+            <input
+              type="text"
+              placeholder="Model ID..."
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+            />
+            <div className="field-hint">
+              {provider === "anthropic"
+                ? "Default: claude-sonnet-4-6. Also: claude-opus-4-6, claude-haiku-4-5-20251001"
+                : "Default: gpt-4o. Also: gpt-4o-mini, gpt-4.1, gpt-4.1-mini"}
+            </div>
+          </div>
+
+          {provider === "openai" && (
+            <div className="field">
+              <div className="label">Base URL</div>
+              <input
+                type="text"
+                placeholder="https://api.openai.com/v1"
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+              />
+              <div className="field-hint">
+                Change for OpenRouter (openrouter.ai/api/v1), Groq (api.groq.com/openai/v1), or other compatible APIs
+              </div>
+            </div>
+          )}
+
+          <button className="btn-primary" onClick={save}>
+            {saved ? "Saved ✓" : "Save"}
+          </button>
+
           {saved && (
             <div className="status success">
-              ✓ API key saved successfully
+              ✓ Settings saved successfully
             </div>
           )}
 
@@ -109,15 +176,21 @@ function Options() {
 
           <div className="divider" />
           <p className="note">
-            Don't have a key?{" "}
-            <a
-              href="https://console.anthropic.com"
-              target="_blank"
-              rel="noreferrer">
-              Get one at console.anthropic.com
-            </a>{" "}
-            — it only takes a minute. API usage is pay-per-use and typically
-            costs a fraction of a cent per message generated.
+            {provider === "anthropic" ? (
+              <>
+                Don't have a key?{" "}
+                <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">
+                  Get one at console.anthropic.com
+                </a>
+                {" "}— it only takes a minute. Each message costs less than a penny.
+              </>
+            ) : (
+              <>
+                Get an API key from your provider's dashboard.
+                For OpenAI: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer">platform.openai.com</a>.
+                For other providers, set the Base URL above.
+              </>
+            )}
           </p>
         </div>
       </div>

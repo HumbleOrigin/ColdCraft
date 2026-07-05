@@ -13,7 +13,22 @@ An AI-powered Chrome extension that injects a polished sidebar into LinkedIn pro
 
 ---
 
-## Getting Started
+## Quick Install (no coding required)
+
+If you just want to use ColdCraft without building from source:
+
+1. Download the latest release zip from [Releases](https://github.com/HumbleOrigin/ColdCraft/releases)
+2. Unzip the folder
+3. Open Chrome and go to `chrome://extensions/`
+4. Enable **Developer mode** (toggle in top right)
+5. Click **Load unpacked** and select the unzipped folder
+6. Navigate to any LinkedIn profile — the ColdCraft sidebar appears on the right
+
+The extension will walk you through setting up your API key on first use.
+
+---
+
+## Getting Started (from source)
 
 ### 1. Prerequisites
 
@@ -104,9 +119,29 @@ Output is in `build/chrome-mv3-prod/`. You can then zip this folder and upload t
 
 ---
 
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| "Invalid API key (401)" | Your key is wrong or revoked. Go to [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) and create a new one. |
+| "Rate limited (429)" | Too many requests. Wait 30 seconds and try again. |
+| "Insufficient credits" | Your account needs billing. Add a payment method at [console.anthropic.com/settings/billing](https://console.anthropic.com/settings/billing). |
+| Sidebar doesn't appear | Make sure you're on a `linkedin.com/in/...` profile page. Try refreshing the page. |
+| "Failed to connect to background service" | Reload the extension: go to `chrome://extensions/`, find ColdCraft, click the refresh icon. |
+| Profile data not loading | LinkedIn's page structure changes. Click "Rescrape" in the sidebar, or reload the LinkedIn page. |
+
+---
+
 ## Notes
 
 - The extension only activates on `https://www.linkedin.com/in/*` profile pages
 - Your API key is stored in `chrome.storage.sync` and syncs across your Chrome profile
 - The API key is only read from the background service worker — it never touches page context
 - LinkedIn's DOM structure changes frequently; if scraping stops working, the extension will warn you and still allow generation with whatever data was found
+- Each message costs roughly $0.002-$0.005 (less than a penny)
+
+---
+
+## Feedback
+
+Found a bug or have a suggestion? [Open an issue](https://github.com/HumbleOrigin/ColdCraft/issues/new).

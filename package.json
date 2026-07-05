@@ -1,7 +1,7 @@
 {
   "name": "linkedin-cold-message",
-  "displayName": "LinkedIn Cold Message Generator",
-  "version": "1.0.0",
+  "displayName": "ColdCraft - LinkedIn Cold Messaging",
+  "version": "1.0.2",
   "description": "AI-powered cold message generator for LinkedIn profiles",
   "author": "Your Name",
   "scripts": {
@@ -25,11 +25,14 @@
   "manifest": {
     "host_permissions": [
       "https://www.linkedin.com/*",
-      "https://api.anthropic.com/*"
+      "https://api.anthropic.com/*",
+      "https://api.openai.com/*",
+      "https://openrouter.ai/*",
+      "https://api.groq.com/*",
+      "https://api.mistral.ai/*"
     ],
     "permissions": [
-      "storage",
-      "scripting"
+      "storage"
     ]
   }
 }
