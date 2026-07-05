@@ -3,3 +3,5 @@ build/
 .plasmo/
 .env
 *.zip
+.gstack/
+.DS_Store
