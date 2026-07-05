@@ -1,5 +1,6 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 import { callAI, loadAIConfig } from "../aiClient"
+import { sanitizeProfileText } from "../sanitize"
 
 export type SenderInfo = {
   name: string
@@ -35,6 +36,7 @@ export type GenerateMessageRequest = {
   customInstructions?: string
   selectedHook?: string
   messageType?: "cold" | "thank_you" | "follow_up" | "circle_back"
+  conversationContext?: string
   variantCount?: number
   styleExamples?: StyleExample[]
 }
@@ -142,6 +144,29 @@ Generate exactly ${variantCount} message variant${variantCount === 1 ? "" : "s"}
 Do not label them "Variant A" or "Variant B". Do not add any explanation. ${variantCount > 1 ? `Just the ${variantCount} messages separated by ===.` : "Just the message, nothing else."}`
 }
 
+export function buildMessageTypeInstruction(
+  messageType: GenerateMessageRequest["messageType"],
+  conversationContext?: string
+): string {
+  if (!messageType || messageType === "cold") return ""
+
+  const contextBlock = conversationContext
+    ? `\nWHAT ACTUALLY HAPPENED (sender's own notes, the ONLY source of truth for past interactions):\n${conversationContext}\n`
+    : ""
+  const noInventionRule =
+    "CRITICAL: Reference ONLY what the sender's notes above say. Never invent, guess, or make plausible-sounding claims about what was discussed or what happened. If the notes don't mention something, don't reference it."
+  const noNotesRule =
+    "CRITICAL: The sender provided no notes about the prior interaction, so keep the message generic. Do NOT invent or guess any specific topic, detail, or moment from a past conversation."
+
+  if (messageType === "thank_you") {
+    return `MESSAGE TYPE: Post-call thank you. Write a SHORT follow-up (2-3 sentences max). Warm, grateful tone. Sign off with "Thanks" or "Thank you". Do NOT include a CTA asking for another call.${contextBlock}\n${conversationContext ? noInventionRule : noNotesRule}`
+  }
+  if (messageType === "follow_up") {
+    return `MESSAGE TYPE: No-response follow-up. The sender already reached out and got no reply. Write a VERY short message (2 sentences max). Light, not passive-aggressive. Mention you reached out before, give one brief new reason to connect or a fresh angle. Keep it casual.${contextBlock}\n${conversationContext ? noInventionRule : noNotesRule}`
+  }
+  return `MESSAGE TYPE: Circling back after time has passed. The sender connected with this person a while ago. Write a brief message referencing that they spoke before, provide a new reason to reconnect. 2-3 sentences. Warm but brief.${contextBlock}\n${conversationContext ? noInventionRule : noNotesRule}`
+}
+
 const handler: PlasmoMessaging.MessageHandler<
   GenerateMessageRequest,
   GenerateMessageResponse
@@ -154,6 +179,7 @@ const handler: PlasmoMessaging.MessageHandler<
     customInstructions,
     selectedHook,
     messageType,
+    conversationContext,
     variantCount,
     styleExamples
   } = req.body
@@ -178,10 +204,10 @@ Target area: ${senderInfo.targetArea}`
 
   const senderContext = [
     senderInfo.linkedinText
-      ? `--- Sender's LinkedIn profile (use to find shared connections/interests with recipient) ---\n${senderInfo.linkedinText.slice(0, 4000)}`
+      ? `--- Sender's LinkedIn profile (use to find shared connections/interests with recipient) ---\n${sanitizeProfileText(senderInfo.linkedinText.slice(0, 4000))}`
       : "",
     senderInfo.resumeText
-      ? `--- Sender's resume (use to find shared connections/interests with recipient) ---\n${senderInfo.resumeText.slice(0, 3000)}`
+      ? `--- Sender's resume (use to find shared connections/interests with recipient) ---\n${sanitizeProfileText(senderInfo.resumeText.slice(0, 3000))}`
       : ""
   ]
     .filter(Boolean)
@@ -193,11 +219,12 @@ ${senderIntro}
 Use ONLY the sender's name, school, year, and status for the intro line. Do not pull anything from the recipient's profile to describe the sender.
 ${senderContext ? `\nThe following is additional background on the sender. Use it ONLY to find genuine shared connections, interests, or experiences with the recipient for the hook. Never mention these details in the intro line.\n\n${senderContext}` : ""}`
 
-  const recipientBlock = rawProfileText
+  const cleanedRecipientText = rawProfileText ? sanitizeProfileText(rawProfileText) : ""
+  const recipientBlock = cleanedRecipientText
     ? `=== WHO THE MESSAGE IS BEING SENT TO ===
 (Raw LinkedIn page text. Extract name, current title, firm, career history, and any hook-worthy details from this.)
 ---
-${rawProfileText}
+${cleanedRecipientText}
 ---`
     : `=== WHO THE MESSAGE IS BEING SENT TO ===
 Name: ${profile.name}
@@ -252,9 +279,7 @@ ${recipientBlock}
 ${referralName ? `Referral: ${referralName} suggested the sender reach out. Use this as the opening hook for ${count === 1 ? "the message" : "ALL variants"}.` : ""}
 ${selectedHook ? `Prioritize this detail as the hook angle for Variant 1: ${selectedHook}.${count > 1 ? " Use different hooks for other variants." : ""}` : ""}
 ${customInstructions ? `Extra context from sender: ${customInstructions}` : ""}
-${messageType === "thank_you" ? 'MESSAGE TYPE: Post-call thank you. Write a SHORT follow-up (2-3 sentences max). Reference something specific they discussed (make it plausible based on profile). Warm, grateful tone. Sign off with "Thanks" or "Thank you". Do NOT include a CTA asking for another call.' : ""}
-${messageType === "follow_up" ? "MESSAGE TYPE: No-response follow-up. The sender already reached out and got no reply. Write a VERY short message (2 sentences max). Light, not passive-aggressive. Mention you reached out before, give one brief new reason to connect or a fresh angle. Keep it casual." : ""}
-${messageType === "circle_back" ? "MESSAGE TYPE: Circling back after time has passed. The sender connected with this person a while ago. Write a brief message referencing that they spoke before, provide a new reason to reconnect (a new question, an update on the sender's progress, or a relevant development). 2-3 sentences. Warm but brief." : ""}
+${buildMessageTypeInstruction(messageType, conversationContext ? sanitizeProfileText(conversationContext.slice(0, 1500)) : undefined)}
 
 ${buildStyleSection()}
 

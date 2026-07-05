@@ -2,6 +2,32 @@
 
 All notable changes to ColdCraft will be documented in this file.
 
+## [1.1.0] - 2026-07-05
+
+### Restored
+Features originally built July 2 in the deleted `linkedin-cold-message` source folder, reconstructed from session transcripts and merged into the current codebase:
+- **Training Data panel** (in the new header dropdown menu): browse rated messages as condensed expandable cards, add/edit notes, flip ratings, remove examples, clear all
+- **Style training toggle** ("Learn from my feedback", default off) — rated examples steer generations only while enabled; 10-example library cap with 4 used per generation (2 liked, 2 disliked)
+- **Export/Import backup**: training examples + message history as JSON, with replace confirmation (accepts old-format backups)
+- **Hamburger dropdown menu** in the header (Message History / Training Data / Settings) with SVG icons, replacing the two icon buttons
+- **SVG thumbs-up/down** with active states and toggle-off, replacing emoji buttons
+- **Rating context input**: after rating a message, an optional "What did you like? / What would you change?" note feeds into future prompts
+- **Confidence checks** per variant: body word count vs 35-55 target, contains a question, has a CTA, avoids generic phrasing
+
+## [1.0.3] - 2026-07-05
+
+### Added
+- Conversation-notes field for thank-you, follow-up, and circle-back messages (required for thank-you); the prompt now references only these notes and never invents details of past interactions
+- Connection note / Message toggle with a character counter against LinkedIn's 300-char connection-note limit
+
+### Changed
+- API key moved from `chrome.storage.sync` to `chrome.storage.local` so it stays on-device (existing keys migrate automatically on first generation)
+- README, options page, and privacy policy updated to accurately describe key storage and multi-provider data flow
+- Docs (CLAUDE.md, README) aligned with the actual product: IB-student outreach focus, real message types
+
+### Removed
+- Groq and Mistral `host_permissions` — custom base URLs now support api.openai.com and openrouter.ai only (OpenRouter proxies most other providers)
+
 ## [1.0.2] - 2026-07-05
 
 ### Added

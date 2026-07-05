@@ -1,13 +1,15 @@
 {
   "name": "linkedin-cold-message",
   "displayName": "ColdCraft - LinkedIn Cold Messaging",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "AI-powered cold message generator for LinkedIn profiles",
-  "author": "Your Name",
+  "author": "HumbleOrigin",
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
-    "package": "plasmo package"
+    "package": "plasmo package",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@plasmohq/messaging": "0.6.2",
@@ -20,19 +22,28 @@
     "@types/node": "20.11.5",
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "vitest": "1.6.0"
   },
   "manifest": {
     "host_permissions": [
       "https://www.linkedin.com/*",
       "https://api.anthropic.com/*",
       "https://api.openai.com/*",
-      "https://openrouter.ai/*",
-      "https://api.groq.com/*",
-      "https://api.mistral.ai/*"
+      "https://openrouter.ai/*"
     ],
     "permissions": [
       "storage"
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": [
+          "assets/fonts/*"
+        ],
+        "matches": [
+          "https://www.linkedin.com/*"
+        ]
+      }
     ]
   }
 }

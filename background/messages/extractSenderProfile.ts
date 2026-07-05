@@ -1,5 +1,6 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 import { callAI, loadAIConfig } from "../aiClient"
+import { sanitizeProfileText } from "../sanitize"
 import type { SenderInfo } from "./generateMessage"
 
 export type ExtractSenderProfileRequest = {
@@ -16,6 +17,7 @@ const handler: PlasmoMessaging.MessageHandler<
   ExtractSenderProfileResponse
 > = async (req, res) => {
   const { pageText } = req.body
+  const cleanedText = sanitizeProfileText(pageText.slice(0, 4000))
 
   const config = await loadAIConfig()
   if (!config) {
@@ -33,7 +35,7 @@ Fields to extract:
 
 Page text:
 ---
-${pageText.slice(0, 4000)}
+${cleanedText}
 ---
 
 Return JSON like: {"name":"...","school":"...","year":"...","currentRole":"..."}`
