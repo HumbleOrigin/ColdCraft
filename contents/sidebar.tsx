@@ -384,22 +384,22 @@ function Sidebar() {
 
         .lcmg-tab {
           position: fixed; right: 0; top: 50%; transform: translateY(-50%);
-          width: 44px; height: 96px; background: #6C63FF;
+          width: 44px; height: 96px; background: #2563EB;
           border-radius: 12px 0 0 12px; display: flex; align-items: center;
           justify-content: center; cursor: pointer;
-          box-shadow: -4px 0 16px rgba(108,99,255,0.4);
+          box-shadow: -4px 0 16px rgba(37,99,235,0.4);
           flex-direction: column; gap: 6px;
           transition: background 0.15s, width 0.15s, right 0.3s cubic-bezier(0.4,0,0.2,1);
           z-index: 2147483647;
         }
-        .lcmg-tab:hover { background: #7B74FF; width: 48px; }
+        .lcmg-tab:hover { background: #3b7cf7; width: 48px; }
         .lcmg-tab.sidebar-open { right: 360px; }
         .lcmg-tab-arrow { font-size: 16px; color: #fff; line-height: 1; }
         .lcmg-tab-logo { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 0.5px; line-height: 1; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
 
         .lcmg-header { padding: 16px 20px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .lcmg-logo { display: flex; align-items: center; gap: 8px; }
-        .lcmg-logo-icon { width: 28px; height: 28px; background: #6C63FF; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+        .lcmg-logo-icon { width: 28px; height: 28px; background: #2563EB; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
         .lcmg-logo-text { font-size: 13px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
         .lcmg-logo-sub { font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 400; margin-top: 1px; }
         .lcmg-close-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; transition: color 0.15s; font-size: 18px; line-height: 1; }
@@ -415,32 +415,32 @@ function Sidebar() {
         .lcmg-profile-name { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 3px; }
         .lcmg-profile-title { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.4; }
         .lcmg-badge-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-        .lcmg-badge { font-size: 10px; padding: 2px 8px; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.25); color: #A89EFF; border-radius: 20px; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: all 0.15s; }
-        .lcmg-badge:hover { background: rgba(108,99,255,0.25); }
-        .lcmg-badge.selected { background: rgba(108,99,255,0.35); border-color: #6C63FF; }
+        .lcmg-badge { font-size: 10px; padding: 2px 8px; background: rgba(37,99,235,0.15); border: 1px solid rgba(37,99,235,0.25); color: #93c5fd; border-radius: 20px; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: all 0.15s; }
+        .lcmg-badge:hover { background: rgba(37,99,235,0.25); }
+        .lcmg-badge.selected { background: rgba(37,99,235,0.35); border-color: #2563EB; }
         .lcmg-warning { display: flex; align-items: flex-start; gap: 8px; background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.2); border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: #FFB84D; line-height: 1.5; }
 
-        .lcmg-api-setup { background: rgba(108,99,255,0.08); border: 1px solid rgba(108,99,255,0.2); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .lcmg-api-setup { background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.2); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .lcmg-api-setup-title { font-size: 13px; font-weight: 600; color: #fff; }
         .lcmg-api-setup-desc { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.5; }
-        .lcmg-api-link { color: #6C63FF; text-decoration: none; }
+        .lcmg-api-link { color: #2563EB; text-decoration: none; }
         .lcmg-api-link:hover { text-decoration: underline; }
         .lcmg-api-row { display: flex; gap: 8px; }
 
         .lcmg-textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 12.5px; padding: 10px 12px; outline: none; resize: none; font-family: inherit; line-height: 1.5; transition: border-color 0.15s; }
         .lcmg-textarea::placeholder { color: rgba(255,255,255,0.25); }
-        .lcmg-textarea:focus { border-color: #6C63FF; }
+        .lcmg-textarea:focus { border-color: #2563EB; }
 
-        .lcmg-btn-primary { width: 100%; background: #6C63FF; border: none; color: #fff; font-size: 13.5px; font-weight: 600; padding: 11px 16px; border-radius: 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
-        .lcmg-btn-primary:hover:not(:disabled) { background: #7B74FF; transform: translateY(-1px); }
+        .lcmg-btn-primary { width: 100%; background: #2563EB; border: none; color: #fff; font-size: 13.5px; font-weight: 600; padding: 11px 16px; border-radius: 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
+        .lcmg-btn-primary:hover:not(:disabled) { background: #3b7cf7; transform: translateY(-1px); }
         .lcmg-btn-primary:active:not(:disabled) { transform: translateY(0); }
         .lcmg-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .lcmg-btn-ghost { background: none; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-size: 12.5px; font-weight: 500; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
         .lcmg-btn-ghost:hover { border-color: rgba(255,255,255,0.3); color: #fff; background: rgba(255,255,255,0.04); }
-        .lcmg-btn-sm { background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3); color: #A89EFF; font-size: 11.5px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-        .lcmg-btn-sm:hover { background: rgba(108,99,255,0.25); }
+        .lcmg-btn-sm { background: rgba(37,99,235,0.15); border: 1px solid rgba(37,99,235,0.3); color: #93c5fd; font-size: 11.5px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+        .lcmg-btn-sm:hover { background: rgba(37,99,235,0.25); }
         .lcmg-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 12.5px; padding: 9px 12px; outline: none; font-family: inherit; transition: border-color 0.15s; }
-        .lcmg-input:focus { border-color: #6C63FF; }
+        .lcmg-input:focus { border-color: #2563EB; }
         .lcmg-input::placeholder { color: rgba(255,255,255,0.25); }
 
         .lcmg-output { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; }
@@ -473,7 +473,7 @@ function Sidebar() {
 
         .lcmg-you-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 12px; cursor: pointer; transition: background 0.15s; width: 100%; text-align: left; }
         .lcmg-you-pill:hover { background: rgba(255,255,255,0.07); }
-        .lcmg-you-pill-avatar { width: 28px; height: 28px; background: #6C63FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .lcmg-you-pill-avatar { width: 28px; height: 28px; background: #2563EB; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
         .lcmg-you-pill-info { flex: 1; min-width: 0; }
         .lcmg-you-pill-name { font-size: 12.5px; font-weight: 600; color: #fff; }
         .lcmg-you-pill-sub { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -482,17 +482,17 @@ function Sidebar() {
         .lcmg-gear-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 4px; border-radius: 4px; font-size: 15px; line-height: 1; display: flex; align-items: center; transition: color 0.15s; }
         .lcmg-gear-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
 
-        .lcmg-welcome { background: rgba(108,99,255,0.08); border: 1px solid rgba(108,99,255,0.2); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .lcmg-welcome { background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.2); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
         .lcmg-welcome-title { font-size: 14px; font-weight: 600; color: #fff; }
         .lcmg-welcome-text { font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.6; }
         .lcmg-welcome-step { display: flex; align-items: flex-start; gap: 8px; }
-        .lcmg-welcome-num { width: 18px; height: 18px; background: rgba(108,99,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #A89EFF; flex-shrink: 0; margin-top: 1px; }
+        .lcmg-welcome-num { width: 18px; height: 18px; background: rgba(37,99,235,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #93c5fd; flex-shrink: 0; margin-top: 1px; }
         .lcmg-welcome-step-text { font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.5; }
 
         .lcmg-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
         .lcmg-chip { font-size: 11px; padding: 4px 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border-radius: 20px; cursor: pointer; transition: all 0.15s; }
         .lcmg-chip:hover { background: rgba(255,255,255,0.08); color: #fff; }
-        .lcmg-chip.active { background: rgba(108,99,255,0.2); border-color: rgba(108,99,255,0.4); color: #A89EFF; }
+        .lcmg-chip.active { background: rgba(37,99,235,0.2); border-color: rgba(37,99,235,0.4); color: #93c5fd; }
 
         .lcmg-more-toggle { font-size: 11px; color: rgba(255,255,255,0.4); cursor: pointer; background: none; border: none; font-family: inherit; transition: color 0.15s; display: flex; align-items: center; gap: 4px; }
         .lcmg-more-toggle:hover { color: rgba(255,255,255,0.7); }
@@ -804,17 +804,17 @@ function Sidebar() {
               <div className="lcmg-error-text">{"⚠"} {error}</div>
               {error.includes("401") && (
                 <div style={{ fontSize: 11, color: "rgba(255,128,128,0.7)", lineHeight: 1.5 }}>
-                  Your API key is invalid or expired. Open Settings to update it, or <a className="lcmg-api-link" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer" style={{ color: "#A89EFF" }}>get a new key</a>.
+                  Your API key is invalid or expired. Open Settings to update it, or <a className="lcmg-api-link" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer" style={{ color: "#93c5fd" }}>get a new key</a>.
                 </div>
               )}
               {error.includes("429") && (
                 <div style={{ fontSize: 11, color: "rgba(255,128,128,0.7)", lineHeight: 1.5 }}>
-                  Rate limited. Wait a moment and try again, or check your <a className="lcmg-api-link" href="https://console.anthropic.com/settings/limits" target="_blank" rel="noreferrer" style={{ color: "#A89EFF" }}>usage limits</a>.
+                  Rate limited. Wait a moment and try again, or check your <a className="lcmg-api-link" href="https://console.anthropic.com/settings/limits" target="_blank" rel="noreferrer" style={{ color: "#93c5fd" }}>usage limits</a>.
                 </div>
               )}
               {error.toLowerCase().includes("insufficient") && (
                 <div style={{ fontSize: 11, color: "rgba(255,128,128,0.7)", lineHeight: 1.5 }}>
-                  Your API account needs credits. Add billing at <a className="lcmg-api-link" href="https://console.anthropic.com/settings/billing" target="_blank" rel="noreferrer" style={{ color: "#A89EFF" }}>console.anthropic.com/settings/billing</a>.
+                  Your API account needs credits. Add billing at <a className="lcmg-api-link" href="https://console.anthropic.com/settings/billing" target="_blank" rel="noreferrer" style={{ color: "#93c5fd" }}>console.anthropic.com/settings/billing</a>.
                 </div>
               )}
               {(error.includes("Network error") || error.includes("Failed to fetch")) && (

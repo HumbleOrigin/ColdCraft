@@ -22,15 +22,15 @@ function Popup() {
         body { background: #0A0F1E; color: #fff; width: 260px; }
         .popup { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
         .logo { display: flex; align-items: center; gap: 8px; }
-        .logo-icon { width: 28px; height: 28px; background: #6C63FF; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+        .logo-icon { width: 28px; height: 28px; background: #2563EB; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
         .logo-text { font-size: 14px; font-weight: 700; }
         .divider { height: 1px; background: rgba(255,255,255,0.07); }
-        .btn-primary { width: 100%; background: #6C63FF; border: none; color: #fff; font-size: 13px; font-weight: 600; padding: 10px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
-        .btn-primary:hover { background: #7B74FF; }
+        .btn-primary { width: 100%; background: #2563EB; border: none; color: #fff; font-size: 13px; font-weight: 600; padding: 10px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+        .btn-primary:hover { background: #3b7cf7; }
         .btn { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); font-size: 12px; padding: 8px; border-radius: 7px; cursor: pointer; transition: all 0.15s; text-align: center; }
         .btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .step { display: flex; align-items: flex-start; gap: 10px; }
-        .step-num { width: 20px; height: 20px; background: rgba(108,99,255,0.2); border: 1px solid rgba(108,99,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #A89EFF; flex-shrink: 0; margin-top: 1px; }
+        .step-num { width: 20px; height: 20px; background: rgba(37,99,235,0.2); border: 1px solid rgba(37,99,235,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #93c5fd; flex-shrink: 0; margin-top: 1px; }
         .step-text { font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.5; }
       `}</style>
       <div className="popup">
@@ -49,7 +49,7 @@ function Popup() {
           </div>
           <div className="step">
             <div className="step-num">2</div>
-            <div className="step-text">Click "Open Sidebar" above, or click the purple ◀ tab on the right edge of the page</div>
+            <div className="step-text">Click "Open Sidebar" above, or click the blue ◀ tab on the right edge of the page</div>
           </div>
           <div className="step">
             <div className="step-num">3</div>
