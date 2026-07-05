@@ -51,7 +51,7 @@ function Options() {
         .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; }
         .logo-icon { width: 36px; height: 36px; background: #2563EB; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; }
         .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
-        h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+        h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
         .subtitle { font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.5; margin-bottom: 28px; }
         .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
         .label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: rgba(255,255,255,0.35); margin-bottom: 8px; }
@@ -83,7 +83,7 @@ function Options() {
           <div className="logo-icon">✦</div>
           <span className="logo-text">ColdCraft</span>
         </div>
-        <h2>Settings</h2>
+        <h1>Settings</h1>
         <p className="subtitle">
           Configure your AI provider and API key to power message generation.
           Your key is stored locally in Chrome and never leaves your device
