@@ -5,7 +5,7 @@ import type { ErrorInfo, ReactNode } from "react"
 import type { GenerateMessageRequest, GenerateMessageResponse, SenderInfo, StyleExample } from "../background/messages/generateMessage"
 import { ANTHROPIC_MODELS, OPENAI_MODELS, type ModelOption } from "../background/aiClient"
 import SettingsPanel from "./components/SettingsPanel"
-import HistoryPanel from "./components/HistoryPanel"
+import TrackerPanel from "./components/TrackerPanel"
 import TrainingDataPanel from "./components/TrainingDataPanel"
 import MessageOutput from "./components/MessageOutput"
 import ProfileSection from "./components/ProfileSection"
@@ -124,8 +124,8 @@ function Sidebar() {
   const [sendFormat, setSendFormat] = useState<"note" | "message">("note")
   const [showMoreOptions, setShowMoreOptions] = useState(false)
 
-  const [showHistory, setShowHistory] = useState(false)
-  const [history, setHistory] = useState<Array<{ text: string; date: string; recipientName: string }>>([])
+  const [showTracker, setShowTracker] = useState(false)
+  const [followUpCount, setFollowUpCount] = useState(0)
 
   const [showDropdown, setShowDropdown] = useState(false)
   const [showTrainingData, setShowTrainingData] = useState(false)
@@ -145,7 +145,6 @@ function Sidebar() {
     checkApiKey()
     loadProfile()
     loadSenderInfo()
-    loadHistory()
     loadTrainingData()
 
     const handleMessage = (msg: { type: string }) => {
@@ -250,20 +249,23 @@ function Sidebar() {
     }
   }
 
-  const loadHistory = async () => {
-    const result = await chrome.storage.local.get("message_history")
-    if (result.message_history && Array.isArray(result.message_history)) {
-      setHistory(result.message_history)
-    }
-  }
-
-  const saveToHistory = async (texts: string[]) => {
-    const now = new Date().toISOString()
-    const name = profile.name || "Unknown"
-    const entries = texts.map((text) => ({ text, date: now, recipientName: name }))
-    const updated = [...entries, ...history].slice(0, 50)
-    setHistory(updated)
-    await chrome.storage.local.set({ message_history: updated })
+  const trackCopiedMessage = async (messageText: string) => {
+    const url = window.location.href
+    const slug = url.match(/linkedin\.com\/in\/([^/]+)/)?.[1] || ""
+    const linkedinUrl = slug ? `https://www.linkedin.com/in/${slug}/` : url
+    try {
+      await sendToBackground({
+        name: "trackContact",
+        body: {
+          linkedinUrl,
+          name: profile.name || "Unknown",
+          company: profile.company || "",
+          title: profile.title || "",
+          messageText,
+          messageType,
+        }
+      })
+    } catch {}
   }
 
   const saveSenderInfo = async () => {
@@ -416,9 +418,6 @@ function Sidebar() {
       } else if (response.variants) {
         setVariants(response.variants)
         if (response.usage) setTokenUsage(response.usage)
-        if (response.variants.length > 0) {
-          saveToHistory(response.variants)
-        }
       }
     } catch (err) {
       setError("Failed to connect to background service. Try reloading.")
@@ -696,9 +695,9 @@ function Sidebar() {
                 <>
                   <div className="lcmg-dropdown-backdrop" onClick={() => setShowDropdown(false)} />
                   <div className="lcmg-dropdown" role="menu">
-                    <button className="lcmg-dropdown-item" role="menuitem" onClick={() => { setShowDropdown(false); setShowHistory(true) }}>
+                    <button className="lcmg-dropdown-item" role="menuitem" onClick={() => { setShowDropdown(false); setShowTracker(true) }}>
                       <svg className="lcmg-dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                      Message History
+                      Outreach Tracker{followUpCount > 0 ? ` (${followUpCount})` : ""}
                     </button>
                     <button className="lcmg-dropdown-item" role="menuitem" onClick={() => { setShowDropdown(false); setShowTrainingData(true) }}>
                       <svg className="lcmg-dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z"/></svg>
@@ -736,11 +735,10 @@ function Sidebar() {
           scrapeRawPageText={scrapeRawPageText}
         />
 
-        <HistoryPanel
-          open={showHistory}
-          onClose={() => setShowHistory(false)}
-          history={history}
-          onSelect={(text) => { setVariants([text]); setShowHistory(false) }}
+        <TrackerPanel
+          open={showTracker}
+          onClose={() => setShowTracker(false)}
+          onFollowUpCount={setFollowUpCount}
         />
 
         <TrainingDataPanel
@@ -750,8 +748,6 @@ function Sidebar() {
           onUpdateExamples={setStyleExamples}
           styleTrainingEnabled={styleTrainingEnabled}
           onToggleTraining={setStyleTrainingEnabled}
-          history={history}
-          onReplaceHistory={setHistory}
         />
 
         <div className="lcmg-scroll">
@@ -966,6 +962,7 @@ function Sidebar() {
               onRate={rateVariant}
               onContextChange={handleVariantContextChange}
               onContextCommit={handleVariantContextCommit}
+              onCopy={trackCopiedMessage}
             />
           ))}
 
