@@ -10,13 +10,11 @@ type Props = {
   onUpdateExamples: (examples: StyleExample[]) => void
   styleTrainingEnabled: boolean
   onToggleTraining: (enabled: boolean) => void
-  history: HistoryEntry[]
-  onReplaceHistory: (history: HistoryEntry[]) => void
 }
 
 export default function TrainingDataPanel({
   open, onClose, styleExamples, onUpdateExamples,
-  styleTrainingEnabled, onToggleTraining, history, onReplaceHistory
+  styleTrainingEnabled, onToggleTraining
 }: Props) {
   const [expandedCard, setExpandedCard] = useState<string | null>(null)
   const [editingNoteKey, setEditingNoteKey] = useState<string | null>(null)
@@ -295,7 +293,6 @@ export default function TrainingDataPanel({
                   style_training_enabled: importPreview.enabled
                 })
                 onUpdateExamples(importPreview.examples)
-                onReplaceHistory(importPreview.history)
                 onToggleTraining(importPreview.enabled)
                 setImportPreview(null)
               }}>Replace & Import</button>

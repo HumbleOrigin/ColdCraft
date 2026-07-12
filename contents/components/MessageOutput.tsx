@@ -38,12 +38,13 @@ type Props = {
   onRate: (index: number, rating: "up" | "down") => void
   onContextChange: (index: number, context: string) => void
   onContextCommit: (index: number) => void
+  onCopy?: (variant: string) => void
 }
 
 export default function MessageOutput({
   variant, index, totalVariants, charLimit, styleTrainingEnabled,
   rating, ratingContext, libraryFull,
-  onEdit, onRate, onContextChange, onContextCommit
+  onEdit, onRate, onContextChange, onContextCommit, onCopy
 }: Props) {
   const [copied, setCopied] = useState(false)
   const [showChecks, setShowChecks] = useState(false)
@@ -52,6 +53,7 @@ export default function MessageOutput({
     await navigator.clipboard.writeText(variant)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+    onCopy?.(variant)
   }
 
   const charCount = variant.length
