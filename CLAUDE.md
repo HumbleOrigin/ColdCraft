@@ -77,7 +77,7 @@ Load in Chrome: `chrome://extensions/` → Developer mode → Load unpacked → 
 Only injects on `https://www.linkedin.com/in/*` profile pages (configured in manifest `content_scripts.matches`).
 
 ## Current Version
-1.1.0
+1.2.0
 
 ## Active TODOs
 See TODOS.md for the backlog. All items from the 2026-07-01 design review and 2026-07-05 audit are done. Candidate next items: reply tracking on history entries, one-click insert into LinkedIn's message box.
